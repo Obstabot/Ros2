@@ -1,0 +1,29 @@
+# ROS 2 / colcon workspace ignore file
+
+# colcon build artifacts
+build/
+install/
+log/
+
+# ROS 2 Python cache
+*.pyc
+*.pyo
+*.swp
+*.bak
+*.tmp
+
+# ROS 2 launch logs
+launch/*.log
+
+# IDE / Editor settings
+.vscode/
+
+# Python virtual environments
+venv/
+.env/
+
+# macOS metadata
+.DS_Store
+
+# Ubuntu thumbnail cache
+**/._*
