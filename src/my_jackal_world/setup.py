@@ -1,4 +1,6 @@
 from setuptools import setup
+import os
+from glob import glob
 
 package_name = 'my_jackal_world'
 
@@ -10,9 +12,10 @@ setup(
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
-        ('share/' + package_name + '/launch', ['launch/simple_world.launch.py']),
+        ('share/' + package_name + '/launch', glob('launch/*.launch.py')),
         # ✅ world 폴더도 포함 (필요하다면)
         ('share/' + package_name + '/worlds', ['worlds/simple.world']),
+        ('share/' + package_name + '/models', glob('models/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -23,6 +26,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+          'random_spawn = my_jackal_world.random_spawn:main',
         ],
     },
 )

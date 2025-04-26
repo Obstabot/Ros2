@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="cylinder_obstacle">
+    <static>true</static>
+    <link name="link">
+      <pose>0 0 0.5 0 0 0</pose> <!-- z=0.5로 해서 지면 위에 올리기 -->
+      <collision name="collision">
+        <geometry>
+          <cylinder>
+            <radius>0.5</radius>
+            <length>1.0</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <cylinder>
+            <radius>0.2</radius>
+            <length>1.0</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <ambient>0 1 1 1</ambient> <!-- 청록색 -->
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>
