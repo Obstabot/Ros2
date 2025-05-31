@@ -5,6 +5,7 @@ import math
 import random
 import os
 from ament_index_python.packages import get_package_share_directory
+import json
 
 # 경계 설정
 MIN_X, MAX_X = 0.0, 10.0
@@ -29,7 +30,7 @@ class RandomObstacleSpawner(Node):
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Waiting for spawn_entity service...')
 
-        self.spawn_goal_marker()
+        # self.spawn_goal_marker()
         self.spawn_obstacles()
 
     def spawn_goal_marker(self):
@@ -96,6 +97,10 @@ class RandomObstacleSpawner(Node):
                     future = self.cli.call_async(req)
                     rclpy.spin_until_future_complete(self, future)
                     self.get_logger().info(f"Spawned obstacle at ({rand_x:.2f}, {rand_y:.2f})")
+
+            with open('/tmp/obstacle_positions.json', 'w') as f:
+                json.dump(obstacle_positions,f)
+            self.get_logger().info(f"Saved {len(obstacle_positions)} obstacle positions to /tmp/obstacle_positions.json")
 
         except Exception as e:
             self.get_logger().error(f"Failed to spawn obstacles: {e}")
