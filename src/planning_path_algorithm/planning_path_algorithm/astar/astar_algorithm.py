@@ -19,7 +19,7 @@ class AStar:
         self.g = dict()
 
     def searching(self):
-        print(f"[DEBUG] Obstacle positions: {sorted(self.obs)}")
+        # print(f"[DEBUG] Obstacle positions: {sorted(self.obs)}")
 
         self.PARENT[self.s_start] = self.s_start
         self.g[self.s_start] = 0
@@ -66,20 +66,13 @@ class AStar:
         return math.hypot(s_goal[0] - s_start[0], s_goal[1] - s_start[1])
 
     def is_collision(self, s_start, s_end):
-        def to_grid(p):
-            return int(round(p[0])), int(round(p[1]))
+        start_grid = int((round(s_start[0]))), int(round(s_start[1]))
+        end_grid = (int(round(s_end[0]))), int(round(s_end[1]))
+        print(f"start_grid:{start_grid} end_grid:{end_grid}")
 
-        x0, y0 = to_grid(s_start)
-        x1, y1 = to_grid(s_end)
-
-        # Bresenham or interpolation-based checking
-        steps = max(abs(x1 - x0), abs(y1 - y0))
-        for i in range(steps + 1):
-            x = int(round(x0 + (x1 - x0) * i / steps))
-            y = int(round(y0 + (y1 - y0) * i / steps))
-            if (x, y) in self.obs:
-                print(f"[DEBUG] Collision detected at ({x}, {y})")
-                return True
+        if start_grid in self.obs or end_grid in self.obs:
+            print(f"collision detected from {start_grid} to {end_grid}")
+            return True
         return False
 
     def f_value(self, s):
