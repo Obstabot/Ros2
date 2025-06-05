@@ -6,6 +6,8 @@ import random
 import os
 from ament_index_python.packages import get_package_share_directory
 import json
+from std_msgs.msg import Bool
+from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
 
 # 경계 설정
 MIN_X, MAX_X = 0.0, 10.0
@@ -25,6 +27,14 @@ class RandomObstacleSpawner(Node):
 
         self.declare_parameter('obstacle_num', 10)
         self.num_obstacles = self.get_parameter('obstacle_num').value
+
+        latch_qos = QoSProfile(
+            depth = 1,
+            reliability = ReliabilityPolicy.RELIABLE,
+            durability = DurabilityPolicy.TRANSIENT_LOCAL
+        )
+
+        self.ready_pub = self.create_publisher(Bool, '/obstacles_ready',latch_qos)
 
         self.cli = self.create_client(SpawnEntity, '/spawn_entity')
         while not self.cli.wait_for_service(timeout_sec=1.0):
@@ -101,6 +111,9 @@ class RandomObstacleSpawner(Node):
             with open('/tmp/obstacle_positions.json', 'w') as f:
                 json.dump(obstacle_positions,f)
             self.get_logger().info(f"Saved {len(obstacle_positions)} obstacle positions to /tmp/obstacle_positions.json")
+
+            self.ready_pub.publish(Bool(data=True))
+            self.get_logger().info("🔔 Published /obstacles_ready=True")
 
         except Exception as e:
             self.get_logger().error(f"Failed to spawn obstacles: {e}")

@@ -35,6 +35,8 @@ setup(
           'turtlebot_controller = my_jackal_world.dynamics_obstacles.turtlebot_controller:main',
           'multi_controller_launcher = my_jackal_world.dynamics_obstacles.multi_controller_launcher:main',
           'central_reset_node = my_jackal_world.dynamics_obstacles.central_reset_node:main',
+          'astar_planner_node = my_jackal_world.path.astar_planner_node:main',
+          'follower_node = my_jackal_world.path.follower_node:main'
         ],
     },
 )
