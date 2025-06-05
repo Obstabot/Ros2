@@ -19,7 +19,7 @@ class PathFollower(Node):
         super().__init__('path_follower')
 
         # ----- 파라미터 -----
-        self.declare_parameter('lookahead',     0.4)   # [m]
+        self.declare_parameter('lookahead',     0.2)   # [m]
         self.declare_parameter('linear_speed',  0.3)   # [m/s]
         self.declare_parameter('angular_gain',  2.0)   # [rad/s per rad]
         self.lookahead = self.get_parameter('lookahead').value
@@ -79,7 +79,7 @@ class PathFollower(Node):
             self.idx += 1
 
         # 경로 끝에 도달
-        if target is None:
+        if target is None or math.hypot(px - self.path_pts[-1][0], py - self.path_pts[-1][1]) < 0.1:
             self.cmd_pub.publish(Twist())        # 정지
             self.path_pts.clear()
             self.get_logger().info("[Follower] 목표 도달, 경로 완료")
@@ -90,8 +90,13 @@ class PathFollower(Node):
         ang_err  = self._normalize(angle_to - yaw)
 
         cmd = Twist()
-        cmd.linear.x  = self.v
-        cmd.angular.z = self.k_ang * ang_err
+        cmd.linear.x  = self.v * max(0.1,1.0 - abs(ang_err))
+
+        if abs(ang_err) > math.pi /2 :
+            cmd.linear.x = 0.0
+
+        max_ang = 1.0
+        cmd.angular.z = max(-max_ang, min(max_ang, self.k_ang * ang_err))
         self.cmd_pub.publish(cmd)
 
     @staticmethod

@@ -51,15 +51,36 @@ class AstarPlanner(Node):
         grid_path = grid_path[::-1][1:]
         self.get_logger().info(f"[GRID]{grid_path}")
 
+        def interpolate_path(path, resolution=0.05):
+            from math import sqrt
+            interpolated = []
+            for i in range(len(path)-1):
+                x0, y0 = path[i]
+                x1, y1 = path[i + 1]
+                dx, dy = x1 - x0, y1 - y0
+                dist = sqrt(dx**2+dy**2)
+                steps = max(1, int(dist / resolution))
+                for j in range(steps):
+                    ratio = j/steps
+                    x = x0 + ratio * dx
+                    y = y0 + ratio * dy
+                    interpolated.append((x,y))
+            interpolated.append(path[-1])
+            return interpolated
+        
+        smooth_path = interpolate_path(grid_path, resolution=0.1)
+
         path_msg = Path()
         path_msg.header.frame_id = 'odom'
+        path_msg.header.stamp = self.get_clock().now().to_msg()
+
         res = astar.Env.resolution
         org = astar.Env.origin
 
-        for gx, gy in grid_path:
+        for gx, gy in smooth_path:
             pose = PoseStamped()
-            pose.pose.position.x = gx * res + org[0]
-            pose.pose.position.y = gy * res + org[1]
+            pose.pose.position.x = gx * res + org[0] + 0.05
+            pose.pose.position.y = gy * res + org[1] + 0.05
             pose.pose.orientation.w = 1.0
             path_msg.poses.append(pose)
 

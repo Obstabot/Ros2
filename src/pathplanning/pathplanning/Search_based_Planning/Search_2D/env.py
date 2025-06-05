@@ -9,8 +9,8 @@ class Env:
         self.resolution = resolution  # 1 grid → 실제 몇 m
         self.x_range = int(10.0 / resolution)             # 격자 맵 크기
         self.y_range = int(10.0 / resolution)
-        # self.motions = [(-1,0),(1,0),(0,-1),(0,1),(-1,-1),(1,1),(1,-1),(-1,1)]
-        self.motions = [(-1,0), (1,0), (0,-1), (0,1)]
+        self.motions = [(-1,0),(1,0),(0,-1),(0,1),(-1,-1),(1,1),(1,-1),(-1,1)]
+        # self.motions = [(-1,0), (1,0), (0,-1), (0,1)]
         self.obs = self.obs_map()     # 셋으로 저장
 
     def update_obs(self, obs_set):

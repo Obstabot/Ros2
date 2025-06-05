@@ -19,6 +19,10 @@ from Search_2D.Astar import AStar
 class Dijkstra(AStar):
     """Dijkstra set the cost as the priority 
     """
+    def __init__(self, s_start, s_goal, heuristic_type, env_obj):
+        super().__init__(s_start, s_goal, heuristic_type)
+        self.Env = env_obj
+
     def searching(self):
         """
         Breadth-first Searching.
@@ -27,7 +31,7 @@ class Dijkstra(AStar):
 
         self.PARENT[self.s_start] = self.s_start
         self.g[self.s_start] = 0
-        self.g[self.s_goal] = math.inf
+        # self.g[self.s_goal] = math.inf
         heapq.heappush(self.OPEN,
                        (0, self.s_start))
 
@@ -56,9 +60,16 @@ class Dijkstra(AStar):
 
 def main():
     s_start = (5, 5)
-    s_goal = (45, 25)
+    s_goal = (90, 89)
 
-    dijkstra = Dijkstra(s_start, s_goal, 'None')
+    env_obj = env.Env()
+
+    if s_goal in env_obj.obs:
+        print(f"❌ 목표점 {s_goal}이 장애물에 있습니다!")
+    else:
+        print(f"✅ 목표점 {s_goal}은 통과 가능한 위치입니다.")
+
+    dijkstra = Dijkstra(s_start, s_goal, 'None', env_obj)
     plot = plotting.Plotting(s_start, s_goal)
 
     path, visited = dijkstra.searching()
