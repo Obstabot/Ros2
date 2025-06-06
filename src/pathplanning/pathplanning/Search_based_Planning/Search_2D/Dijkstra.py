@@ -11,9 +11,9 @@ import heapq
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
                 "/../../Search_based_Planning/")
 
-from Search_2D import plotting, env
+from . import plotting, env
 
-from Search_2D.Astar import AStar
+from .Astar import AStar
 
 
 class Dijkstra(AStar):
@@ -21,7 +21,6 @@ class Dijkstra(AStar):
     """
     def __init__(self, s_start, s_goal, heuristic_type, env_obj):
         super().__init__(s_start, s_goal, heuristic_type)
-        self.Env = env_obj
 
     def searching(self):
         """
@@ -59,10 +58,20 @@ class Dijkstra(AStar):
 
 
 def main():
-    s_start = (5, 5)
-    s_goal = (90, 89)
+    start_world = (0,0)
+    goal_world=(9.5,9.5)
 
-    env_obj = env.Env()
+    env_obj = env.Env(origin=(0.0, 0.0), resolution=0.05)
+
+    s_start = (
+        int((start_world[0] - env_obj.origin[0]) / env_obj.resolution),
+        int((start_world[1] - env_obj.origin[1]) / env_obj.resolution)
+    )
+    s_goal = (
+        int((goal_world[0] - env_obj.origin[0]) / env_obj.resolution),
+        int((goal_world[1] - env_obj.origin[1]) / env_obj.resolution)
+    )
+
 
     if s_goal in env_obj.obs:
         print(f"❌ 목표점 {s_goal}이 장애물에 있습니다!")
@@ -70,7 +79,7 @@ def main():
         print(f"✅ 목표점 {s_goal}은 통과 가능한 위치입니다.")
 
     dijkstra = Dijkstra(s_start, s_goal, 'None', env_obj)
-    plot = plotting.Plotting(s_start, s_goal)
+    plot = plotting.Plotting(s_start, s_goal, env_obj=env_obj)
 
     path, visited = dijkstra.searching()
     plot.animation(path, visited, "Dijkstra's")  # animation generate

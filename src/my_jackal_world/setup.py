@@ -36,6 +36,8 @@ setup(
           'multi_controller_launcher = my_jackal_world.dynamics_obstacles.multi_controller_launcher:main',
           'central_reset_node = my_jackal_world.dynamics_obstacles.central_reset_node:main',
           'astar_planner_node = my_jackal_world.path.astar_planner_node:main',
+          'dijkstra_planner_node = my_jackal_world.path.dijkstra_planner_node:main',
+          'rrtstar_planner_node = my_jackal_world.path.rrtstar_planner_node:main',
           'follower_node = my_jackal_world.path.follower_node:main'
         ],
     },

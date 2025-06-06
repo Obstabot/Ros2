@@ -17,12 +17,16 @@ from . import plotting, env
 class AStar:
     """AStar set the cost + heuristics as the priority
     """
-    def __init__(self, s_start, s_goal, heuristic_type):
+    def __init__(self, s_start, s_goal, heuristic_type, env_obj=None):
         self.s_start = s_start
         self.s_goal = s_goal
         self.heuristic_type = heuristic_type
 
-        self.Env = env.Env(origin=(0.0,0.0), resolution=0.1)  # class Env
+        self.Env = env_obj if env_obj else env.Env(origin=(0.0,0.0), resolution=0.05)  # class Env
+
+        inflation_radius = 2
+        infalted_obs = env.Env.inflate_obstacles(self.Env.obs, inflation_radius)
+        self.Env.update_obs(infalted_obs)
 
         self.u_set = self.Env.motions  # feasible input set
         self.obs = self.Env.obs  # position of obstacles
@@ -123,8 +127,17 @@ class AStar:
         :param s: state
         :return: neighbors
         """
+        neighbors = []
+        for u in self.u_set:
+            x,y = s[0]+u[0], s[1]+u[1]
 
-        return [(s[0] + u[0], s[1] + u[1]) for u in self.u_set]
+            if x < 0 or x >= self.Env.x_range or y < 0 or y >= self.Env.y_range:
+                continue
+            if (x,y) in self.Env.obs:
+                continue
+            neighbors.append((x,y))
+
+        return neighbors
 
     def cost(self, s_start, s_goal):
         """
@@ -138,7 +151,14 @@ class AStar:
         if self.is_collision(s_start, s_goal):
             return math.inf
 
-        return math.hypot(s_goal[0] - s_start[0], s_goal[1] - s_start[1])
+        dist = math.hypot(s_goal[0] - s_start[0], s_goal[1] - s_start[1])
+
+        # for ox, oy in self.obs:
+        #     if abs(ox - s_goal[0]) <= 2 and abs(oy - s_goal[1]) <2:
+        #         dist *= 2
+        #         break
+        
+        return dist
 
     def is_collision(self, s_start, s_end):
         # Δ
@@ -198,20 +218,36 @@ class AStar:
 
 
 def main():
-    s_start = (0, 0)
-    s_goal = (95, 95)
+    start_world = (0.0, 0.0)
+    goal_world  = (9.5, 9.5)
 
-    astar = AStar(s_start, s_goal, "euclidean")
-    plot = plotting.Plotting(s_start, s_goal)
+    env_obj = env.Env(origin=(0.0, 0.0), resolution=0.05)
+
+    s_start = (
+        int((start_world[0] - env_obj.origin[0]) / env_obj.resolution),
+        int((start_world[1] - env_obj.origin[1]) / env_obj.resolution)
+    )
+    s_goal = (
+        int((goal_world[0] - env_obj.origin[0]) / env_obj.resolution),
+        int((goal_world[1] - env_obj.origin[1]) / env_obj.resolution)
+    )
+
+    if s_goal in env_obj.obs:
+        print(f"❌ 목표점 {s_goal}이 장애물에 있습니다!")
+        return
+
+    astar = AStar(s_start, s_goal, "euclidean", env_obj=env_obj)
+    plot = plotting.Plotting(s_start, s_goal, env_obj=env_obj)
 
     path, visited = astar.searching()
 
-    env = astar.Env
     for gx, gy in path:
-        rx = gx * env.resolution + env.origin[0]
-        ry = gy * env.resolution + env.origin[1]
+        rx = gx * env_obj.resolution + env_obj.origin[0]
+        ry = gy * env_obj.resolution + env_obj.origin[1]
         print(f"grid=({gx:3}, {gy:3}) -> world=({rx:5.2f}, {ry:5.2f})")
-    plot.animation(path, visited, "A*")  # animation
+
+    plot.animation(path, visited, "A*")
+
 
     # path, visited = astar.searching_repeated_astar(2.5)               # initial weight e = 2.5
     # plot.animation_ara_star(path, visited, "Repeated A*")

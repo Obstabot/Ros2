@@ -20,11 +20,11 @@ def generate_launch_description():
             os.path.join(pkg_share, 'launch', 'random_mode.launch.py')),
         launch_arguments={'obstacle_num': obstacle_num}.items())
 
-    # 2. A* 플래너  (console_scripts 이름 사용!)
+    # 2. dijkstra 플래너  (console_scripts 이름 사용!)
     planner = Node(
         package='my_jackal_world',
-        executable='astar_planner_node',   # astar_planner.py 가 아님!
-        name='astar_planner',
+        executable='dijkstra_planner_node',   # dijkstra_planner.py 가 아님!
+        name='dijkstra_planner',
         output='screen')
 
     # 3. Pure-Pursuit 팔로워

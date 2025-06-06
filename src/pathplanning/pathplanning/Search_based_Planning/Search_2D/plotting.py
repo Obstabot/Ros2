@@ -14,9 +14,9 @@ from . import env
 
 
 class Plotting:
-    def __init__(self, xI, xG, obs=None):
+    def __init__(self, xI, xG, obs=None, env_obj=None):
         self.xI, self.xG = xI, xG
-        self.env = env.Env()
+        self.env = env_obj if env_obj is not None else env.Env()
         self.obs = obs if obs is not None else self.env.obs_map()
 
     def update_obs(self, obs):

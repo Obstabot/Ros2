@@ -11,7 +11,7 @@ import numpy as np
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
                 "/../../Sampling_based_Planning/")
 
-from Sampling_based_Planning.rrt_2D import env, plotting, utils, queue
+from . import env, plotting, utils, queue
 
 
 class Node:
@@ -39,9 +39,6 @@ class RrtStar:
 
         self.x_range = self.env.x_range
         self.y_range = self.env.y_range
-        self.obs_circle = self.env.obs_circle
-        self.obs_rectangle = self.env.obs_rectangle
-        self.obs_boundary = self.env.obs_boundary
 
     def planning(self):
         for k in range(self.iter_max):
@@ -64,6 +61,7 @@ class RrtStar:
         self.path = self.extract_path(self.vertex[index])
 
         self.plotting.animation(self.vertex, self.path, "rrt*, N = " + str(self.iter_max))
+        print(f"[DEBUG] 최종 path 길이: {len(self.path)}")
 
     def new_state(self, node_start, node_goal):
         dist, theta = self.get_distance_and_angle(node_start, node_goal)
@@ -173,12 +171,37 @@ class RrtStar:
 
 
 def main():
-    x_start = (18, 8)  # Starting node
-    x_goal = (37, 18)  # Goal node
+    # 실수 좌표 기반 시작점과 목표점 (world 좌표)
+    start_world = (0.0, 0.0)
+    goal_world  = (9.5, 9.5)
 
-    rrt_star = RrtStar(x_start, x_goal, 10, 0.10, 20, 10000)
+    # 환경 설정
+    env_obj = env.Env(origin=(0.0, 0.0), resolution=0.05)
+
+    # 목표점이 장애물에 있는지 사전 체크
+    goal_check = (round(goal_world[0], 2), round(goal_world[1], 2))
+    if goal_check in env_obj.obs:
+        print(f"❌ 목표점 {goal_check}이 장애물에 있습니다!")
+        return
+
+    # RRT* 객체 생성
+    rrt_star = RrtStar(start_world, goal_world, step_len=1.0,
+                       goal_sample_rate=0.10, search_radius=2.0, iter_max=3000)
+
+    # 환경 공유
+    rrt_star.env = env_obj
+    rrt_star.utils.env = env_obj
+    rrt_star.plotting.env = env_obj
+
+    # 경로 탐색
     rrt_star.planning()
 
+    if rrt_star.path:
+        print(f"\n✅ RRT* 최종 경로 (길이: {len(rrt_star.path)}):")
+        for i, (x, y) in enumerate(rrt_star.path[::-1]):
+            print(f"{i:02d}: ({x:.2f}, {y:.2f})")
+    else:
+        print("❌ 경로를 찾지 못했습니다.")
 
 if __name__ == '__main__':
     main()

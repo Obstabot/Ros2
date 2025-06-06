@@ -19,12 +19,14 @@ class PathFollower(Node):
         super().__init__('path_follower')
 
         # ----- 파라미터 -----
-        self.declare_parameter('lookahead',     0.2)   # [m]
+        self.declare_parameter('lookahead',     0.4)   # [m]
         self.declare_parameter('linear_speed',  0.3)   # [m/s]
-        self.declare_parameter('angular_gain',  2.0)   # [rad/s per rad]
+        self.declare_parameter('angular_gain',  3.5)
+        self.declare_parameter('target_tolerance', 0.1)   # [rad/s per rad]
         self.lookahead = self.get_parameter('lookahead').value
         self.v         = self.get_parameter('linear_speed').value
         self.k_ang     = self.get_parameter('angular_gain').value
+        self.tol = self.get_parameter('target_tolerance').value
 
         # ----- 토픽 -----
         self.cmd_pub = self.create_publisher(
@@ -79,7 +81,12 @@ class PathFollower(Node):
             self.idx += 1
 
         # 경로 끝에 도달
-        if target is None or math.hypot(px - self.path_pts[-1][0], py - self.path_pts[-1][1]) < 0.1:
+        last_x, last_y = self.path_pts[-1]
+        dist_to_goal = math.hypot(px - last_x, py - last_y)
+        angle_to_goal = math.atan2(last_y - py, last_x - px)
+        yaw_err = abs(self._normalize(angle_to_goal - yaw))
+
+        if target is None and dist_to_goal < 0.15 and yaw_err < 0.5:
             self.cmd_pub.publish(Twist())        # 정지
             self.path_pts.clear()
             self.get_logger().info("[Follower] 목표 도달, 경로 완료")

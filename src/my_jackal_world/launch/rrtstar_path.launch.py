@@ -7,7 +7,7 @@ from ament_index_python.packages import get_package_share_directory
 import os
 
 def generate_launch_description():
-    # 0. 인자 (장애물 개수)
+    # 0. 장애물 개수 인자
     obstacle_arg = DeclareLaunchArgument(
         'obstacle_num', default_value='10', description='Number of obstacles')
     obstacle_num = LaunchConfiguration('obstacle_num')
@@ -20,23 +20,29 @@ def generate_launch_description():
             os.path.join(pkg_share, 'launch', 'random_mode.launch.py')),
         launch_arguments={'obstacle_num': obstacle_num}.items())
 
-    # 2. A* 플래너  (console_scripts 이름 사용!)
+    # 2. RRT* 플래너 노드
     planner = Node(
         package='my_jackal_world',
-        executable='astar_planner_node',   # astar_planner.py 가 아님!
-        name='astar_planner',
+        executable='rrtstar_planner_node',   # <-- setup.py에 등록한 이름 사용
+        name='rrtstar_planner',
         output='screen')
 
-    # 3. Pure-Pursuit 팔로워
+    # 3. Pure-Pursuit 추종 노드
     follower = Node(
         package='my_jackal_world',
-        executable='follower_node',        # follower_node.py
+        executable='follower_node',
         name='path_follower',
         output='screen',
-        parameters=[
-            {'lookahead': 0.4,
-             'linear_speed': 0.3,
-             'target_tolerance':0.25}
-        ])
+        parameters=[{
+            'lookahead': 0.4,
+            'linear_speed': 0.3,
+            'target_tolerance': 0.25
+        }]
+    )
 
-    return LaunchDescription([obstacle_arg, random_mode, planner, follower])
+    return LaunchDescription([
+        obstacle_arg,
+        random_mode,
+        planner,
+        follower
+    ])
