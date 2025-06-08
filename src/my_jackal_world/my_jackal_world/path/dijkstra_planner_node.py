@@ -7,6 +7,8 @@ from std_msgs.msg import Bool
 from pathplanning.Search_based_Planning.Search_2D.Dijkstra import Dijkstra
 from pathplanning.Search_based_Planning.Search_2D.env import Env
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+from math import sqrt
+
 
 class DijkstraPlanner(Node):
     def __init__(self):
@@ -14,7 +16,7 @@ class DijkstraPlanner(Node):
         self.path_pub = self.create_publisher(Path, '/planned_path', 1)
 
         self.ready = False
-        self.done  = False
+        self.done = False
 
         latch_qos = QoSProfile(
             depth=1,
@@ -37,7 +39,7 @@ class DijkstraPlanner(Node):
             return
 
         start_world = (0.0, 0.0)
-        goal_world  = (9.5, 9.5)
+        goal_world = (9.5, 9.5)
         env_obj = Env(origin=(0.0, 0.0), resolution=0.05)
 
         s_start = (
@@ -53,8 +55,8 @@ class DijkstraPlanner(Node):
 
         t0 = time.time()
         grid_path, _ = dijkstra.searching()
-        elapsed = (time.time() - t0) * 1000
-        self.get_logger().info(f"Dijkstra done in {elapsed:.1f} ms")
+        search_time = (time.time() - t0) * 1000  # milliseconds
+        self.get_logger().info(f"Dijkstra done in {search_time:.1f} ms")
 
         if not grid_path:
             self.get_logger().info("No path found")
@@ -64,13 +66,12 @@ class DijkstraPlanner(Node):
         self.get_logger().info(f"[GRID] {grid_path}")
 
         def interpolate_path(path, resolution=0.2):
-            from math import sqrt
             interpolated = []
-            for i in range(len(path)-1):
+            for i in range(len(path) - 1):
                 x0, y0 = path[i]
                 x1, y1 = path[i + 1]
                 dx, dy = x1 - x0, y1 - y0
-                dist = sqrt(dx**2 + dy**2)
+                dist = sqrt(dx ** 2 + dy ** 2)
                 steps = max(1, int(dist / resolution))
                 for j in range(steps):
                     ratio = j / steps
@@ -95,16 +96,31 @@ class DijkstraPlanner(Node):
         res = dijkstra.Env.resolution
         org = dijkstra.Env.origin
 
+        total_length = 0.0
+        prev = None
         for gx, gy in smooth_path:
+            x = gx * res + org[0]
+            y = gy * res + org[1]
+
             pose = PoseStamped()
-            pose.pose.position.x = gx * res + org[0]
-            pose.pose.position.y = gy * res + org[1]
+            pose.header = path_msg.header
+            pose.pose.position.x = x
+            pose.pose.position.y = y
             pose.pose.orientation.w = 1.0
             path_msg.poses.append(pose)
 
+            if prev:
+                dx = x - prev[0]
+                dy = y - prev[1]
+                total_length += sqrt(dx ** 2 + dy ** 2)
+            prev = (x, y)
+
         self.path_pub.publish(path_msg)
         self.get_logger().info(f"Path published: {len(path_msg.poses)} waypoints")
+        self.get_logger().info(f"경로 길이 : {total_length:.2f} m")
+        self.get_logger().info(f"탐색 시간 : {search_time:.2f} ms")
         self.done = True
+
 
 def main(args=None):
     rclpy.init(args=args)

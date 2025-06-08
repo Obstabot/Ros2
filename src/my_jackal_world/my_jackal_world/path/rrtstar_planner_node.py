@@ -8,6 +8,7 @@ from pathplanning.Sampling_based_Planning.rrt_2D.rrt_star import RrtStar
 from pathplanning.Sampling_based_Planning.rrt_2D.env import Env
 
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+from math import sqrt
 
 
 class RRTStarPlanner(Node):
@@ -38,7 +39,6 @@ class RRTStarPlanner(Node):
 
         start = (0.0, 0.0)
         goal = (9.5, 9.5)
-
         env_obj = Env(origin=(0.0, 0.0), resolution=0.05)
 
         if (round(goal[0], 2), round(goal[1], 2)) in env_obj.obs:
@@ -54,7 +54,8 @@ class RRTStarPlanner(Node):
 
         t0 = time.time()
         planner.planning()
-        self.get_logger().info(f"RRT* done in {(time.time()-t0)*1000:.1f} ms")
+        search_time = (time.time() - t0) * 1000  # ms
+        self.get_logger().info(f"RRT* done in {search_time:.1f} ms")
 
         raw_path = planner.path[::-1][1:]  # start부터 goal까지
 
@@ -66,7 +67,6 @@ class RRTStarPlanner(Node):
 
         # 보간 및 다운샘플링
         def interpolate_path(path, resolution=0.2):
-            from math import sqrt
             interpolated = []
             for i in range(len(path)-1):
                 x0, y0 = path[i]
@@ -93,15 +93,26 @@ class RRTStarPlanner(Node):
         path_msg.header.frame_id = 'odom'
         path_msg.header.stamp = self.get_clock().now().to_msg()
 
+        total_length = 0.0
+        prev = None
         for x, y in smooth_path:
             pose = PoseStamped()
+            pose.header = path_msg.header
             pose.pose.position.x = x
             pose.pose.position.y = y
             pose.pose.orientation.w = 1.0
             path_msg.poses.append(pose)
 
+            if prev:
+                dx = x - prev[0]
+                dy = y - prev[1]
+                total_length += sqrt(dx**2 + dy**2)
+            prev = (x, y)
+
         self.path_pub.publish(path_msg)
         self.get_logger().info(f"Path published: {len(path_msg.poses)} waypoints")
+        self.get_logger().info(f"경로 길이: {total_length:.2f} m")
+        self.get_logger().info(f"탐색 시간: {search_time:.2f} ms")
         self.done = True
 
 

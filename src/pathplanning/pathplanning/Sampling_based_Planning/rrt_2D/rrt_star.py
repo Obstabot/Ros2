@@ -153,7 +153,13 @@ class RrtStar:
                 OPEN.put(node_c)
 
     def extract_path(self, node_end):
-        path = [[self.s_goal.x, self.s_goal.y]]
+        path = []
+        
+        if not self.utils.is_collision(node_end, self.s_goal):
+            path.append([self.s_goal.x, self.s_goal.y])
+        else:
+            print("[경고] goal 연결 경로에 충돌 있음")
+
         node = node_end
 
         while node.parent is not None:

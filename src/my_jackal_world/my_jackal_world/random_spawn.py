@@ -14,7 +14,7 @@ MIN_X, MAX_X = 0.0, 10.0
 MIN_Y, MAX_Y = 0.0, 10.0
 
 # 로봇 시작 위치, 목표 위치
-START_POS = (0.5, 0.5)
+START_POS = (0.0, 0.0)
 GOAL_POS = (9.5,9.5)
 
 # 설정 값

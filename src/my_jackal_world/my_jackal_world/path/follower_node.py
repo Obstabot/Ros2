@@ -86,10 +86,23 @@ class PathFollower(Node):
         angle_to_goal = math.atan2(last_y - py, last_x - px)
         yaw_err = abs(self._normalize(angle_to_goal - yaw))
 
-        if target is None and dist_to_goal < 0.15 and yaw_err < 0.5:
-            self.cmd_pub.publish(Twist())        # 정지
+        if dist_to_goal < 0.2 and yaw_err <0.5:
+            self.get_logger().info("[Follower] 목표 도달")
+            self.cmd_pub.publish(Twist())
             self.path_pts.clear()
-            self.get_logger().info("[Follower] 목표 도달, 경로 완료")
+            return
+
+        if target is None:
+            for i in range(len(self.path_pts)):
+                tx, ty = self.path_pts[i]
+                if math.hypot(tx - px, ty - py) > self.lookahead:
+                    target = (tx, ty)
+                    self.idx = i
+                    self.get_logger().warn(f"[Follower] 경로 이탈 → index 재탐색 {i}")
+                    break
+        if target is None:
+            self.get_logger().warn("[Follower] 목표점 찾기 실패")
+            self.cmd_pub.publish(Twist())
             return
 
         # ---- 제어 계산 (Pure-Pursuit) ----

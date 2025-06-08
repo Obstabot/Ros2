@@ -24,9 +24,9 @@ class AStar:
 
         self.Env = env_obj if env_obj else env.Env(origin=(0.0,0.0), resolution=0.05)  # class Env
 
-        inflation_radius = 2
-        infalted_obs = env.Env.inflate_obstacles(self.Env.obs, inflation_radius)
-        self.Env.update_obs(infalted_obs)
+        # inflation_radius = 2
+        # infalted_obs = env.Env.inflate_obstacles(self.Env.obs, inflation_radius)
+        # self.Env.update_obs(infalted_obs)
 
         self.u_set = self.Env.motions  # feasible input set
         self.obs = self.Env.obs  # position of obstacles
