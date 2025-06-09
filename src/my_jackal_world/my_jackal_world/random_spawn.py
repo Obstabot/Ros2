@@ -8,6 +8,8 @@ from ament_index_python.packages import get_package_share_directory
 import json
 from std_msgs.msg import Bool
 from rclpy.qos import QoSProfile, ReliabilityPolicy, DurabilityPolicy
+import os
+import shutil
 
 # 경계 설정
 MIN_X, MAX_X = 0.0, 10.0
@@ -79,6 +81,10 @@ class RandomObstacleSpawner(Node):
 
     def spawn_obstacles(self):
         try:
+            if os.path.exists('/tmp/obstacle_positions.json'):
+                os.remove('/tmp/obstacle_positions.json')
+                self.get_logger().info("🧹 Cleared old /tmp/obstacle_positions.json")
+
             package_share_directory = get_package_share_directory('my_jackal_world')
             model_path = os.path.join(package_share_directory, 'models', 'cylinder.sdf')
 

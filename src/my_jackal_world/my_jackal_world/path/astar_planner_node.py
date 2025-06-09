@@ -58,7 +58,7 @@ class AstarPlanner(Node):
             self.get_logger().info("No path found")
             return
 
-        grid_path = grid_path[::-1][1:]
+        grid_path = grid_path[::-1]
         self.get_logger().info(f"[GRID]{grid_path}")
 
         def interpolate_path(path, resolution=0.05):
@@ -82,7 +82,7 @@ class AstarPlanner(Node):
             return path[::step] + [path[-1]]
 
         smooth_path = interpolate_path(grid_path, resolution=0.2)
-        smooth_path = downsample_path(smooth_path, step=3)
+        # smooth_path = downsample_path(smooth_path, step=3)
 
         path_msg = Path()
         path_msg.header.frame_id = 'odom'

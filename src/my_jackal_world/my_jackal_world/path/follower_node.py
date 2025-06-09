@@ -19,8 +19,8 @@ class PathFollower(Node):
         super().__init__('path_follower')
 
         # ----- 파라미터 -----
-        self.declare_parameter('lookahead',     0.4)   # [m]
-        self.declare_parameter('linear_speed',  0.3)   # [m/s]
+        self.declare_parameter('lookahead',     0.6)   # [m]
+        self.declare_parameter('linear_speed',  0.25)   # [m/s]
         self.declare_parameter('angular_gain',  3.5)
         self.declare_parameter('target_tolerance', 0.1)   # [rad/s per rad]
         self.lookahead = self.get_parameter('lookahead').value
@@ -86,10 +86,11 @@ class PathFollower(Node):
         angle_to_goal = math.atan2(last_y - py, last_x - px)
         yaw_err = abs(self._normalize(angle_to_goal - yaw))
 
-        if dist_to_goal < 0.2 and yaw_err <0.5:
+        if dist_to_goal < 0.15:
             self.get_logger().info("[Follower] 목표 도달")
             self.cmd_pub.publish(Twist())
             self.path_pts.clear()
+            self.idx=0
             return
 
         if target is None:

@@ -57,7 +57,7 @@ class RRTStarPlanner(Node):
         search_time = (time.time() - t0) * 1000  # ms
         self.get_logger().info(f"RRT* done in {search_time:.1f} ms")
 
-        raw_path = planner.path[::-1][1:]  # start부터 goal까지
+        raw_path = planner.path[::-1]  # start부터 goal까지
 
         if not raw_path:
             self.get_logger().info("No path found")
@@ -82,11 +82,11 @@ class RRTStarPlanner(Node):
             interpolated.append(path[-1])
             return interpolated
 
-        def downsample_path(path, step=3):
-            return path[::step] + [path[-1]]
+        # def downsample_path(path, step=3):
+        #     return path[::step] + [path[-1]]
 
-        smooth_path = interpolate_path(raw_path, resolution=0.1)
-        smooth_path = downsample_path(smooth_path, step=2)
+        smooth_path = interpolate_path(raw_path, resolution=0.2)
+        # smooth_path = downsample_path(smooth_path, step=2)
 
         # Path 메시지 생성
         path_msg = Path()

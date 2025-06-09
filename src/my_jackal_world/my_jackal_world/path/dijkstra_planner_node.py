@@ -62,7 +62,7 @@ class DijkstraPlanner(Node):
             self.get_logger().info("No path found")
             return
 
-        grid_path = grid_path[::-1][1:]
+        grid_path = grid_path[::-1]
         self.get_logger().info(f"[GRID] {grid_path}")
 
         def interpolate_path(path, resolution=0.2):
@@ -81,20 +81,20 @@ class DijkstraPlanner(Node):
             interpolated.append(path[-1])
             return interpolated
 
-        def downsample_path(path, step=3):
-            return path[::step] + [path[-1]]
+        # def downsample_path(path, step=3):
+        #     return path[::step] + [path[-1]]
 
         # 보간 및 다운샘플링
         smooth_path = interpolate_path(grid_path, resolution=0.2)
-        smooth_path = downsample_path(smooth_path, step=3)
+        # smooth_path = downsample_path(smooth_path, step=3)
 
         # Path 메시지 생성
         path_msg = Path()
         path_msg.header.frame_id = 'odom'
         path_msg.header.stamp = self.get_clock().now().to_msg()
 
-        res = dijkstra.Env.resolution
-        org = dijkstra.Env.origin
+        res = env_obj.resolution
+        org = env_obj.origin
 
         total_length = 0.0
         prev = None
